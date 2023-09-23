@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "mysql2": "^3.6.1",
+    "node-cron": "^3.0.2",
     "telegraf": "^3.38.0",
     "web3": "^4.1.2"
   }

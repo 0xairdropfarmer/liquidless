@@ -1,82 +1,99 @@
 const { Web3 } = require('web3')
 const fs = require('fs')
+const cron = require('node-cron')
+
+const EventEmitter = require('events'); // Import EventEmitter
 
 module.exports = (bot, db) => {
-  ;(async () => {
-    try {
-      // Perform multiple queries in parallel
-      const [usersResult] = await Promise.all([
-        db.query('SELECT * FROM users'),
-        // Add more queries here if needed
-      ])
+  const myEmitter = new EventEmitter();
+  myEmitter.setMaxListeners(20); // Set the limit to an appropriate value
 
-      // Loop through the results
-      for (const user of usersResult[0]) {
-        // Do something with each user row
-        if (user.platform === 'Aave' && user.blockchain === 'Optimism') {
-          try {
-            // Perform asynchronous operation inside the loop
-            await getHealthFactorOnOptimism(
-              user.eth_wallet_address,
-              bot,
-              user.telegram_user_id,
-            )
-          } catch (error) {
-            console.error(`Error processing item  :`, error)
-          }
-        } else if (user.platform === 'Aave' && user.blockchain === 'Base') {
-          try {
-            // Perform asynchronous operation inside the loop
-            await getHealthFactorOnBase(
-              user.eth_wallet_address,
-              bot,
-              user.telegram_user_id,
-            )
-          } catch (error) {
-            console.error(`Error processing item ${i}:`, error)
-          }
-        } else if (user.platform === 'Aave' && user.blockchain === 'Arbitrum') {
-          try {
-            // Perform asynchronous operation inside the loop
-            await getHealthFactorOnArbitrum(
-              user.eth_wallet_address,
-              bot,
-              user.telegram_user_id,
-            )
-          } catch (error) {
-            console.error(`Error processing item ${i}:`, error)
-          }
-        } else if (user.platform === 'Aave' && user.blockchain === 'Mainnet') {
-          try {
-            // Perform asynchronous operation inside the loop
-            await getHealthFactorOnMainnet(
-              user.eth_wallet_address,
-              bot,
-              user.telegram_user_id,
-            )
-          } catch (error) {
-            console.error(`Error processing item ${i}:`, error)
-          }
-        } else if (user.platform === 'Aave' && user.blockchain === 'Polygon') {
-          try {
-            // Perform asynchronous operation inside the loop
-            await getHealthFactorOnPolygon(
-              user.eth_wallet_address,
-              bot,
-              user.telegram_user_id,
-            )
-          } catch (error) {
-            console.error(`Error processing item ${i}:`, error)
+  cron.schedule('*/5 * * * *', async () => {
+    ;(async () => {
+      try {
+        // Perform multiple queries in parallel
+        const [usersResult] = await Promise.all([
+          db.query('SELECT * FROM users'),
+          // Add more queries here if needed
+        ])
+
+        // Loop through the results
+        for (const user of usersResult[0]) {
+          // Do something with each user row
+          if (user.platform === 'Aave' && user.blockchain === 'Optimism') {
+            try {
+              // Perform asynchronous operation inside the loop
+              await getHealthFactorOnOptimism(
+                user.eth_wallet_address,
+                bot,
+                user.telegram_user_id,
+              )
+            } catch (error) {
+              console.error(`Error processing item  :`, error)
+            }
+          } else if (user.platform === 'Aave' && user.blockchain === 'Base') {
+            try {
+              // Perform asynchronous operation inside the loop
+              await getHealthFactorOnBase(
+                user.eth_wallet_address,
+                bot,
+                user.telegram_user_id,
+              )
+            } catch (error) {
+              console.error(`Error processing item ${i}:`, error)
+            }
+          } else if (
+            user.platform === 'Aave' &&
+            user.blockchain === 'Arbitrum'
+          ) {
+            try {
+              // Perform asynchronous operation inside the loop
+              await getHealthFactorOnArbitrum(
+                user.eth_wallet_address,
+                bot,
+                user.telegram_user_id,
+              )
+            } catch (error) {
+              console.error(`Error processing item ${i}:`, error)
+            }
+          } else if (
+            user.platform === 'Aave' &&
+            user.blockchain === 'Mainnet'
+          ) {
+            try {
+              // Perform asynchronous operation inside the loop
+              await getHealthFactorOnMainnet(
+                user.eth_wallet_address,
+                bot,
+                user.telegram_user_id,
+              )
+            } catch (error) {
+              console.error(`Error processing item ${i}:`, error)
+            }
+          } else if (
+            user.platform === 'Aave' &&
+            user.blockchain === 'Polygon'
+          ) {
+            try {
+              // Perform asynchronous operation inside the loop
+              await getHealthFactorOnPolygon(
+                user.eth_wallet_address,
+                bot,
+                user.telegram_user_id,
+              )
+            } catch (error) {
+              console.error(`Error processing item ${i}:`, error)
+            }
           }
         }
-      }
 
-      // Close the connection pool
-      await db.end()
-    } catch (error) {
-      console.error('Error:', error)
-    }
-  })()
+        // Close the connection pool
+        await db.end()
+      } catch (error) {
+        console.error('Error:', error)
+      }
+    })()
+  })
 }
 
 async function getHealthFactorOnOptimism(ethAddress, bot, telegram_user_id) {
