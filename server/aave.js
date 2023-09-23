@@ -2,20 +2,20 @@ const { Web3 } = require('web3')
 const fs = require('fs')
 const cron = require('node-cron')
 
-const EventEmitter = require('events'); // Import EventEmitter
+// const EventEmitter = require('events'); // Import EventEmitter
 
 module.exports = (bot, db) => {
-  const myEmitter = new EventEmitter();
-  myEmitter.setMaxListeners(20); // Set the limit to an appropriate value
+  // const myEmitter = new EventEmitter();
+  // myEmitter.setMaxListeners(20); // Set the limit to an appropriate value
 
   cron.schedule('*/5 * * * *', async () => {
-    ;(async () => {
+    ; (async () => {
       try {
         // Perform multiple queries in parallel
         const [usersResult] = await Promise.all([
           db.query('SELECT * FROM users'),
           // Add more queries here if needed
-        ])
+        ])  
 
         // Loop through the results
         for (const user of usersResult[0]) {
@@ -24,67 +24,67 @@ module.exports = (bot, db) => {
             try {
               // Perform asynchronous operation inside the loop
               await getHealthFactorOnOptimism(
-                user.eth_wallet_address,
+                user,
                 bot,
-                user.telegram_user_id,
               )
             } catch (error) {
               console.error(`Error processing item  :`, error)
             }
-          } else if (user.platform === 'Aave' && user.blockchain === 'Base') {
-            try {
-              // Perform asynchronous operation inside the loop
-              await getHealthFactorOnBase(
-                user.eth_wallet_address,
-                bot,
-                user.telegram_user_id,
-              )
-            } catch (error) {
-              console.error(`Error processing item ${i}:`, error)
-            }
-          } else if (
-            user.platform === 'Aave' &&
-            user.blockchain === 'Arbitrum'
-          ) {
-            try {
-              // Perform asynchronous operation inside the loop
-              await getHealthFactorOnArbitrum(
-                user.eth_wallet_address,
-                bot,
-                user.telegram_user_id,
-              )
-            } catch (error) {
-              console.error(`Error processing item ${i}:`, error)
-            }
-          } else if (
-            user.platform === 'Aave' &&
-            user.blockchain === 'Mainnet'
-          ) {
-            try {
-              // Perform asynchronous operation inside the loop
-              await getHealthFactorOnMainnet(
-                user.eth_wallet_address,
-                bot,
-                user.telegram_user_id,
-              )
-            } catch (error) {
-              console.error(`Error processing item ${i}:`, error)
-            }
-          } else if (
-            user.platform === 'Aave' &&
-            user.blockchain === 'Polygon'
-          ) {
-            try {
-              // Perform asynchronous operation inside the loop
-              await getHealthFactorOnPolygon(
-                user.eth_wallet_address,
-                bot,
-                user.telegram_user_id,
-              )
-            } catch (error) {
-              console.error(`Error processing item ${i}:`, error)
-            }
-          }
+          } 
+          // else if (user.platform === 'Aave' && user.blockchain === 'Base') {
+          //   try {
+          //     // Perform asynchronous operation inside the loop
+          //     await getHealthFactorOnBase(
+          //       user.eth_wallet_address,
+          //       bot,
+          //       user.telegram_user_id,
+          //     )
+          //   } catch (error) {
+          //     console.error(`Error processing item ${i}:`, error)
+          //   }
+          // } else if (
+          //   user.platform === 'Aave' &&
+          //   user.blockchain === 'Arbitrum'
+          // ) {
+          //   try {
+          //     // Perform asynchronous operation inside the loop
+          //     await getHealthFactorOnArbitrum(
+          //       user.eth_wallet_address,
+          //       bot,
+          //       user.telegram_user_id,
+          //     )
+          //   } catch (error) {
+          //     console.error(`Error processing item ${i}:`, error)
+          //   }
+          // } else if (
+          //   user.platform === 'Aave' &&
+          //   user.blockchain === 'Mainnet'
+          // ) {
+          //   try {
+          //     // Perform asynchronous operation inside the loop
+          //     await getHealthFactorOnMainnet(
+          //       user.eth_wallet_address,
+          //       bot,
+          //       user.telegram_user_id,
+          //     )
+          //   } catch (error) {
+          //     console.error(`Error processing item ${i}:`, error)
+          //   }
+          // } else if (
+          //   user.platform === 'Aave' &&
+          //   user.blockchain === 'Polygon'
+          // ) {
+          //   try {
+          //     // Perform asynchronous operation inside the loop
+          //     await getHealthFactorOnPolygon(
+          //       user.eth_wallet_address,
+          //       bot,
+          //       user.telegram_user_id,
+          //     )
+          //   } catch (error) {
+          //     console.error(`Error processing item ${i}:`, error)
+          //   }
+          // }
         }
 
         // Close the connection pool
@@ -96,7 +96,7 @@ module.exports = (bot, db) => {
   })
 }
 
-async function getHealthFactorOnOptimism(ethAddress, bot, telegram_user_id) {
+async function getHealthFactorOnOptimism(user_data, bot) {
   const web3 = new Web3(
     'https://optimism-mainnet.infura.io/v3/38044e8e56eb47f68aba1ba67f692d0c',
   ) // Replace with your Infura Project ID
@@ -106,16 +106,19 @@ async function getHealthFactorOnOptimism(ethAddress, bot, telegram_user_id) {
   const contractAddress = '0x794a61358D6845594F94dc1DB02A252b5b4814aD'
   const contract = new web3.eth.Contract(contractAbi, contractAddress)
   try {
-    const result = await contract.methods.getUserAccountData(ethAddress).call()
+    const result = await contract.methods.getUserAccountData(user_data.eth_wallet_address).call()
     let str = result.healthFactor.toString()
     let firstcrop = str.slice(0, 3)
     let decimal = Number(firstcrop)
     let finalhf = decimal / Math.pow(10, 2)
+    console.log(finalhf)
+    if (user_data.health_factor >= finalhf) {
+      bot.telegram.sendMessage(
+        user_data.telegram_user_id,
+        `The Health Factor of the address ${user_data.eth_wallet_address} on Aave Optimism is ${finalhf}.`,
+      )
+    }
 
-    bot.telegram.sendMessage(
-      telegram_user_id,
-      `The Health Factor of the address ${ethAddress} on Aave Optimism is ${finalhf}.`,
-    )
     // console.log(`Aave on Optimism Health Factor for ${ethAddress}: ${finalhf}`)
   } catch (error) {
     console.error('Error:', error)
