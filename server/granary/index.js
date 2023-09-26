@@ -30,7 +30,7 @@ module.exports = (bot) => {
         // Loop through the results
         for (const user of rows) {
           // Do something with each user row
-          if (user.platform === 'Aave' && user.blockchain === 'Optimism') {
+          if (user.platform === 'Granary Finance' && user.blockchain === 'Optimism') {
             try {
               // Perform asynchronous operation inside the loop
               await getHealthFactorOnOptimism(
@@ -41,7 +41,7 @@ module.exports = (bot) => {
               console.error(`Error processing item  :`, error)
             }
           } 
-          else if (user.platform === 'Aave' && user.blockchain === 'Base') {
+          else if (user.platform === 'Granary Finance' && user.blockchain === 'Base') {
             try {
               // Perform asynchronous operation inside the loop
               await getHealthFactorOnBase(
@@ -54,7 +54,7 @@ module.exports = (bot) => {
             }
           }
           else if (
-            user.platform === 'Aave' &&
+            user.platform === 'Granary Finance' &&
             user.blockchain === 'Arbitrum'
           ) {
             try {
@@ -68,7 +68,7 @@ module.exports = (bot) => {
               console.error(`Error processing item ${i}:`, error)
             }
           } else if (
-            user.platform === 'Aave' &&
+            user.platform === 'Granary Finance' &&
             user.blockchain === 'Mainnet'
           ) {
             try {
@@ -81,12 +81,12 @@ module.exports = (bot) => {
               console.error(`Error processing item ${i}:`, error)
             }
           } else if (
-            user.platform === 'Aave' &&
-            user.blockchain === 'Polygon'
+            user.platform === 'Granary Finance' &&
+            user.blockchain === 'BSC'
           ) {
             try {
               // Perform asynchronous operation inside the loop
-              await getHealthFactorOnPolygon(
+              await getHealthFactorOnBSC(
                 user,
                 bot,
               )
@@ -112,26 +112,26 @@ async function getHealthFactorOnOptimism(user_data, bot) {
     'https://optimism-mainnet.infura.io/v3/38044e8e56eb47f68aba1ba67f692d0c',
   ) // Replace with your Infura Project ID
   const contractAbi = JSON.parse(
-    fs.readFileSync('server/abi/contract-abi.json', 'utf8'),
+    fs.readFileSync('server/granary/abi/contract-abi.json', 'utf8'),
   )
-  const contractAddress = '0x794a61358D6845594F94dc1DB02A252b5b4814aD'
+  const contractAddress = '0x8FD4aF47E4E63d1D2D45582c3286b4BD9Bb95DfE'
   const contract = new web3.eth.Contract(contractAbi, contractAddress)
   try {
     const result = await contract.methods.getUserAccountData(user_data.eth_wallet_address).call()
-    //console.log(result)
+      // console.log(result)s
     let str = result.healthFactor.toString()
     let firstcrop = str.slice(0, 3)
     let decimal = Number(firstcrop)
     let finalhf = decimal / Math.pow(10, 2)
-    console.log('aave op',finalhf)
+    console.log('granary op',finalhf)
     if (user_data.health_factor >= finalhf && result.totalDebtBase != 0) {
       bot.telegram.sendMessage(
         user_data.telegram_user_id,
-        `The Health Factor of the address ${user_data.eth_wallet_address} on Aave Optimism is ${finalhf}.`,
+        `The Health Factor of the address ${user_data.eth_wallet_address} on Granary Finance Optimism is ${finalhf}.`,
       )
     }
 
-    // console.log(`Aave on Optimism Health Factor for ${ethAddress}: ${finalhf}`)
+    // console.log(`Granary Finance on Optimism Health Factor for ${ethAddress}: ${finalhf}`)
   } catch (error) {
     console.error('Error:', error)
   }
@@ -139,9 +139,9 @@ async function getHealthFactorOnOptimism(user_data, bot) {
 async function getHealthFactorOnBase(user_data, bot) {
   const web3 = new Web3('https://mainnet.base.org') // Replace with your Infura Project ID
   const contractAbi = JSON.parse(
-    fs.readFileSync('server/abi/contract-abi.json', 'utf8'),
+    fs.readFileSync('abi/contract-abi.json', 'utf8'),
   )
-  const contractAddress = '0xA238Dd80C259a72e81d7e4664a9801593F98d1c5'
+  const contractAddress = '0xB702cE183b4E1Faa574834715E5D4a6378D0eEd3       '
   const contract = new web3.eth.Contract(contractAbi, contractAddress)
   try {
      const result = await contract.methods.getUserAccountData(user_data.eth_wallet_address).call()
@@ -150,11 +150,11 @@ async function getHealthFactorOnBase(user_data, bot) {
     let firstcrop = str.slice(0, 3)
     let decimal = Number(firstcrop)
     let finalhf = decimal / Math.pow(10, 2)
-    console.log('aave base',finalhf)
+    console.log('Granary Finance Base',finalhf)
     if (user_data.health_factor >= finalhf && result.totalDebtBase != 0) {
       bot.telegram.sendMessage(
         user_data.telegram_user_id,
-        `The Health Factor of the address ${user_data.eth_wallet_address} on Aave Base is ${finalhf}.`,
+        `The Health Factor of the address ${user_data.eth_wallet_address} on Granary Finance Base is ${finalhf}.`,
       )
     }
 
@@ -167,9 +167,9 @@ async function getHealthFactorOnArbitrum(user_data, bot) {
     'https://arbitrum-mainnet.infura.io/v3/38044e8e56eb47f68aba1ba67f692d0c',
   ) // Replace with your Infura Project ID
   const contractAbi = JSON.parse(
-    fs.readFileSync('server/abi/arbitrum-aave.json', 'utf8'),
+    fs.readFileSync('abi/arbitrum.json', 'utf8'),
   )
-  const contractAddress = '0x794a61358D6845594F94dc1DB02A252b5b4814aD'
+  const contractAddress = '0x102442A3BA1e441043154Bc0B8A2e2FB5E0F94A7'
   const contract = new web3.eth.Contract(contractAbi, contractAddress)
   try {
   const result = await contract.methods.getUserAccountData(user_data.eth_wallet_address).call()
@@ -178,25 +178,25 @@ async function getHealthFactorOnArbitrum(user_data, bot) {
     let firstcrop = str.slice(0, 3)
     let decimal = Number(firstcrop)
     let finalhf = decimal / Math.pow(10, 2)
-    console.log("Aave Arb",finalhf)
+    console.log(finalhf)
     if (user_data.health_factor >= finalhf && result.totalDebtBase != 0) {
       bot.telegram.sendMessage(
         user_data.telegram_user_id,
-        `The Health Factor of the address ${user_data.eth_wallet_address} on Aave Arbitrum is ${finalhf}.`,
+        `The Health Factor of the address ${user_data.eth_wallet_address} on Granary Finance Arbitrum is ${finalhf}.`,
       )
     }
   } catch (error) {
     console.error('Error:', error)
   }
 }
-async function getHealthFactorOnPolygon(user_data, bot) {
+async function getHealthFactorOnBSC(user_data, bot) {
   const web3 = new Web3(
-    'https://polygon-mainnet.infura.io/v3/38044e8e56eb47f68aba1ba67f692d0c',
-  ) // Replace with your Infura Project ID
+    'https://bsc-dataseed1.bnbchain.org',
+  ) // Replace with your Infura Prosject ID
   const contractAbi = JSON.parse(
-    fs.readFileSync('server/abi/contract-abi.json', 'utf8'),
+    fs.readFileSync('abi/contract-abi.json', 'utf8'),
   )
-  const contractAddress = '0x794a61358D6845594F94dc1DB02A252b5b4814aD'
+  const contractAddress = '0x7171054f8d148Fe1097948923C91A6596fC29032'
   const contract = new web3.eth.Contract(contractAbi, contractAddress)
   try {
      const result = await contract.methods.getUserAccountData(user_data.eth_wallet_address).call()
@@ -205,11 +205,11 @@ async function getHealthFactorOnPolygon(user_data, bot) {
     let firstcrop = str.slice(0, 3)
     let decimal = Number(firstcrop)
     let finalhf = decimal / Math.pow(10, 2)
-    console.log("Aave Polygon",finalhf)
+    console.log(finalhf)
     if (user_data.health_factor >= finalhf && result.totalDebtBase != 0) {
       bot.telegram.sendMessage(
         user_data.telegram_user_id,
-        `The Health Factor of the address ${user_data.eth_wallet_address} on Aave Polygon is ${finalhf}.`,
+        `The Health Factor of the address ${user_data.eth_wallet_address} on Granary Finance BSC is ${finalhf}.`,
       )
     }
 
@@ -222,9 +222,9 @@ async function getHealthFactorOnMainnet(user_data, bot) {
     'https://mainnet.infura.io/v3/38044e8e56eb47f68aba1ba67f692d0c',
   ) // Replace with your Infura Project ID
   const contractAbi = JSON.parse(
-    fs.readFileSync('server/abi/mainnet-aave.json', 'utf8'),
+    fs.readFileSync('abi/mainnet.json', 'utf8'),
   )
-  const contractAddress = '0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2'
+  const contractAddress = '0xB702cE183b4E1Faa574834715E5D4a6378D0eEd3'
   const contract = new web3.eth.Contract(contractAbi, contractAddress)
   try {
   const result = await contract.methods.getUserAccountData(user_data.eth_wallet_address).call()
@@ -233,11 +233,11 @@ async function getHealthFactorOnMainnet(user_data, bot) {
     let firstcrop = str.slice(0, 3)
     let decimal = Number(firstcrop)
     let finalhf = decimal / Math.pow(10, 2)
-    console.log("Aave mainnet",finalhf)
+    console.log(finalhf)
     if (user_data.health_factor >= finalhf && result.totalDebtBase != 0) {
       bot.telegram.sendMessage(
         user_data.telegram_user_id,
-        `The Health Factor of the address ${user_data.eth_wallet_address} on Aave Mainnet is ${finalhf}.`,
+        `The Health Factor of the address ${user_data.eth_wallet_address} on Granary Finance Mainnet is ${finalhf}.`,
       )
     }
 

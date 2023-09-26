@@ -1,7 +1,9 @@
 {
   "dependencies": {
+    "@protocolink/compound-kit": "^0.1.5",
     "mysql2": "^3.6.1",
     "node-cron": "^3.0.2",
+    "sqlite3": "^5.1.6",
     "telegraf": "^3.38.0",
     "web3": "^4.1.2"
   }

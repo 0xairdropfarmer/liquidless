@@ -1,28 +1,29 @@
 const { Telegraf } = require('telegraf')
 const session = require('telegraf/session')
 const { Web3 } = require('web3')
-const mysql = require('mysql2/promise')
+const sqlite3 = require('sqlite3').verbose(); 
+const filepath = "./liquidless.db";
 // Replace 'YOUR_BOT_TOKEN' with the API token you received from BotFather
 const token = '6568223655:AAFs3K8MgpB0UZnyeqMRQZ0WMlqPiwm8XxQ'
 const web3 = new Web3(
   'https://mainnet.infura.io/v3/38044e8e56eb47f68aba1ba67f692d0c',
 ) // Replace with your Ethereum node URL
 const aave = require('./server/aave')
-
+const Granary = require('./server/granary/index')
 // Create a new Telegraf bot instance
 const bot = new Telegraf(token)
 async function main() {
   try {
     // Create a MySQL database connection
-    const db = await mysql.createPool({
-      host: 'localhost',
-      user: 'root',
-      password: 'root',
-      database: 'liquidless',
-    })
+    const db = new sqlite3.Database(filepath, (error) => {
+    if (error) {
+      return console.error(error.message);
+    }
+  });
+  console.log("Connection with SQLite has been established");
 
-    aave(bot, db)
-
+    aave(bot)
+    Granary(bot)
     // Use the session middleware to manage user sessions
     bot.use(session())
 
@@ -34,21 +35,20 @@ async function main() {
       // Create a keyboard with platform options (Aave, Silo Finance, Sonne)
       const platformKeyboard = Telegraf.Markup.keyboard([
         ['Aave'],
-        ['Silo Finance'],
-        ['Sonne'],
+        ['Granary Finance'],
       ])
         .resize()
         .oneTime()
 
       // Send a welcome message with the platform options
       ctx.reply(
-        'Welcome to the Greeting Bot!\n\nPlease select a platform:',
+        'Welcome to the LiquidLess Bot!\n\nPlease select a platform:',
         platformKeyboard.extra(),
       )
     })
 
     // Handle platform selection
-    bot.hears(['Aave', 'Silo Finance', 'Sonne'], (ctx) => {
+    bot.hears(['Aave', 'Granary Finance'], (ctx) => {
       // User has selected a platform, store it in the session
       ctx.session.platform = ctx.message.text
 
@@ -65,12 +65,18 @@ async function main() {
             'Base',
           ]
           break
-        case 'Silo Finance':
-          blockchainOptions = ['Mainnet', 'Arbitrum']
+        case 'Granary Finance':
+          blockchainOptions = [
+            'Mainnet',
+            'Optimism',
+            'Arbitrum',
+            'BSC',
+            'Base',
+          ]
           break
-        case 'Sonne':
-          blockchainOptions = ['Optimism', 'Base']
-          break
+        // case 'Sonne':
+        //   blockchainOptions = ['Optimism', 'Base']
+        //   break
         default:
           blockchainOptions = []
       }
@@ -87,7 +93,7 @@ async function main() {
     })
 
     // Handle blockchain selection
-    bot.hears(['Mainnet', 'Optimism', 'Arbitrum', 'Polygon', 'Base'], (ctx) => {
+    bot.hears(['Mainnet', 'Optimism', 'Arbitrum', 'Polygon', 'Base','BSC'], (ctx) => {
       // User has selected a blockchain, store it in the session
       ctx.session.blockchain = ctx.message.text
 
@@ -153,7 +159,7 @@ async function main() {
 
           // Execute the SQL query
 
-          db.query(
+          db.run(
             sql,
             [userId, platform, blockchain, ethWalletAddress, healthFactor],
             (err, results) => {
@@ -176,8 +182,8 @@ async function main() {
           // Start over by asking for the platform choice
           const platformKeyboard = Telegraf.Markup.keyboard([
             ['Aave'],
-            ['Silo Finance'],
-            ['Sonne'],
+            ['Granary Finance'],
+            
           ])
             .resize()
             .oneTime()
