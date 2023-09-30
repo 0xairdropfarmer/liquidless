@@ -19,7 +19,7 @@ The Project is provided "as is," without warranty of any kind, express or implie
 This License automatically terminates if you violate any of its terms.
 
 **Contact**:
-For questions about this License or requests for commercial use, please contact [Your Contact Information].
+For questions about this License or requests for commercial use, please contact [@0xAirdropfarmer](https://twitter.com/0xairdropfarmer).
 
 This License is subject to change without notice and was last updated on 30/9/2023.
 
