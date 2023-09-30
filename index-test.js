@@ -1,11 +1,11 @@
 const { Telegraf } = require('telegraf')
 const session = require('telegraf/session')
 const { Web3 } = require('web3')
-const sqlite3 = require('sqlite3').verbose();
+const sqlite3 = require('sqlite3').verbose(); 
 const filepath = "./liquidless.db";
 require('dotenv').config()
 // Replace 'YOUR_BOT_TOKEN' with the API token you received from BotFather
-const token = process.env.TELEGRAM_TOKEN_PROD
+const token = process.env.TELEGRAM_TOKEN_TEST
 const web3 = new Web3(
   process.env.Mainnet_RPC_LINK
 ) // Replace with your Ethereum node URL
@@ -14,21 +14,23 @@ const Granary = require('./server/granary/index')
 const Compound = require('./server/compound/index')
 const Radient = require('./server/radient/index')
 const Spark = require('./server/spark/index')
+
 // Create a new Telegraf bot instance
 const bot = new Telegraf(token)
 async function main() {
   try {
     // Create a MySQL database connection
     const db = new sqlite3.Database(filepath, (error) => {
-      if (error) {
-        return console.error(error.message);
-      }
-    });
-    console.log("Connection with SQLite has been established");
-    Radient(bot)
-    aave(bot)
-    Granary(bot)
-    Compound(bot)
+    if (error) {
+      return console.error(error.message);
+    }
+  });
+  console.log("Connection with SQLite has been established");
+
+    // aave(bot)
+    // Granary(bot)
+    // Compound(bot)
+    // Radient(bot)
     Spark(bot)
     // Use the session middleware to manage user sessions
     bot.use(session())
@@ -41,8 +43,7 @@ async function main() {
       // Create a keyboard with platform options (Aave, Silo Finance, Sonne)
       const platformKeyboard = Telegraf.Markup.keyboard([
         ['Aave'],
-        ['Compound'],
-        ['Spark Protocol'],
+        ['Compound'],['Spark Protocol'],
         ['Radient Capital'],
         ['Granary Finance'],
       ])
@@ -57,7 +58,7 @@ async function main() {
     })
 
     // Handle platform selection
-    bot.hears(['Aave', 'Compound','Spark Protocol', 'Radient Capital', 'Granary Finance'], (ctx) => {
+    bot.hears(['Aave','Compound','Spark Protocol','Radient Capital', 'Granary Finance'], (ctx) => {
       // User has selected a platform, store it in the session
       ctx.session.platform = ctx.message.text
 
@@ -82,18 +83,18 @@ async function main() {
             'BSC',
             'Base',
           ]
-        case 'Spark Protocol':
-          blockchainOptions = [
-            'Mainnet'
-          ]
+          case 'Spark Protocol':
+            blockchainOptions = [ 
+              'Mainnet'
+            ]
           break
-        case 'Radient Capital':
-          blockchainOptions = [
-            'Arbitrum'
-          ]
+          case 'Radient Capital':
+            blockchainOptions = [ 
+              'Arbitrum'
+            ]
           break
         case 'Compound':
-          blockchainOptions = ['Mainnet ETH', 'Mainnet USDC', 'Arbitrum USDC', 'Arbitrum USDC.e', 'Polygon USDC']
+          blockchainOptions = ['Mainnet ETH', 'Mainnet USDC','Arbitrum USDC','Arbitrum USDC.e','Polygon USDC']
           break
         default:
           blockchainOptions = []
@@ -111,7 +112,7 @@ async function main() {
     })
 
     // Handle blockchain selection
-    bot.hears(['Mainnet', 'Optimism', 'Arbitrum', 'Polygon', 'Base', 'BSC', 'Mainnet ETH', 'Mainnet USDC', 'Arbitrum USDC.e', 'Polygon USDC'], (ctx) => {
+    bot.hears(['Mainnet', 'Optimism', 'Arbitrum', 'Polygon', 'Base','BSC','Mainnet ETH', 'Mainnet USDC','Arbitrum USDC.e','Polygon USDC'], (ctx) => {
       // User has selected a blockchain, store it in the session
       ctx.session.blockchain = ctx.message.text
 
@@ -201,10 +202,8 @@ async function main() {
           const platformKeyboard = Telegraf.Markup.keyboard([
             ['Aave'],
             ['Compound'],
-            ['Spark Protocol'],
-            ['Radient Capital'],
             ['Granary Finance'],
-
+            
           ])
             .resize()
             .oneTime()
